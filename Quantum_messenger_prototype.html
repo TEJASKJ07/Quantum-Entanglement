@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Secure Messaging Network</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes photon-travel {
+            0% { offset-distance: 0%; }
+            100% { offset-distance: 100%; }
+        }
+        .photon {
+            animation: photon-travel 2s linear infinite;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Icons
+        const SendIcon = () => (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+        );
+
+        const LockIcon = () => (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+        );
+
+        const UnlockIcon = () => (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
+            </svg>
+        );
+
+        const AlertIcon = () => (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+        );
+
+        // Quantum utilities
+        const generateEntangledPair = () => {
+            const basis = Math.random() < 0.5 ? 0 : 1;
+            return { photon1: basis, photon2: basis };
+        };
+
+        const performBellMeasurement = () => {
+            const outcomes = ['00', '01', '10', '11'];
+            return outcomes[Math.floor(Math.random() * 4)];
+        };
+
+        const generateQuantumKey = (length) => {
+            return Array.from({ length }, () => Math.random() < 0.5 ? '0' : '1').join('');
+        };
+
+        const xorEncrypt = (message, key) => {
+            let encrypted = '';
+            for (let i = 0; i < message.length; i++) {
+                const charCode = message.charCodeAt(i);
+                const keyBit = parseInt(key[i % key.length]);
+                encrypted += String.fromCharCode(charCode ^ (keyBit * 127));
+            }
+            return btoa(encrypted); // Base64 encode
+        };
+
+        const xorDecrypt = (encrypted, key) => {
+            try {
+                const decoded = atob(encrypted);
+                let decrypted = '';
+                for (let i = 0; i < decoded.length; i++) {
+                    const charCode = decoded.charCodeAt(i);
+                    const keyBit = parseInt(key[i % key.length]);
+                    decrypted += String.fromCharCode(charCode ^ (keyBit * 127));
+                }
+                return decrypted;
+            } catch {
+                return '[DECRYPTION FAILED - WRONG KEY]';
+            }
+        };
+
+        const QuantumSecureMessaging = () => {
+            const [stage, setStage] = useState('setup');
+            const [aliceKey, setAliceKey] = useState('');
+            const [bobKey, setBobKey] = useState('');
+            const [charlieKey, setCharlieKey] = useState('');
+            const [messages, setMessages] = useState([]);
+            const [newMessage, setNewMessage] = useState('');
+            const [sender, setSender] = useState('alice');
+            const [receiver, setReceiver] = useState('charlie');
+            const [quantumChannel, setQuantumChannel] = useState(null);
+            const [isEstablishing, setIsEstablishing] = useState(false);
+            const [eavesdropper, setEavesdropper] = useState(false);
+            const [networkLog, setNetworkLog] = useState([]);
+
+            const addLog = (message, type = 'info') => {
+                setNetworkLog(prev => [...prev, { 
+                    message, 
+                    type, 
+                    timestamp: new Date().toLocaleTimeString() 
+                }]);
+            };
+
+            const establishQuantumChannel = async () => {
+                setIsEstablishing(true);
+                setStage('establishing');
+                addLog('🔵 Initializing quantum network...', 'info');
+                
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Step 1: Create entangled pairs
+                addLog('⚛️ Creating entangled photon pairs at quantum repeater (Bob)', 'success');
+                const pairAB = generateEntangledPair();
+                const pairBC = generateEntangledPair();
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // Step 2: Distribute photons
+                addLog('📡 Distributing photons: A→Alice, B→Bob, C→Bob, D→Charlie', 'info');
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // Step 3: Bell measurement at Bob (the repeater)
+                addLog('🔬 Bob performing Bell state measurement (entanglement swapping)', 'info');
+                const bellResult = performBellMeasurement();
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                addLog(`📊 Bell measurement result: |${bellResult}⟩`, 'success');
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Step 4: Alice and Charlie now share entanglement
+                addLog('✨ Entanglement swapped! Alice ↔ Charlie are now entangled', 'success');
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Step 5: Generate quantum keys
+                addLog('🔑 Generating quantum encryption keys...', 'info');
+                const keyLength = 256;
+                const aliceQKey = generateQuantumKey(keyLength);
+                const charlieQKey = aliceQKey; // Perfect correlation from entanglement
+                const bobQKey = generateQuantumKey(keyLength); // Bob has his own key
+                
+                setAliceKey(aliceQKey);
+                setCharlieKey(charlieQKey);
+                setBobKey(bobQKey);
+                
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                if (eavesdropper) {
+                    addLog('⚠️ WARNING: Eavesdropping attempt detected! Quantum state collapsed.', 'error');
+                    addLog('🛡️ Security protocol: Aborting key distribution', 'error');
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    setIsEstablishing(false);
+                    setStage('setup');
+                    return;
+                }
+                
+                addLog('✅ Secure quantum channel established!', 'success');
+                addLog('🔐 All parties now have quantum-encrypted keys', 'success');
+                
+                setQuantumChannel({
+                    established: true,
+                    aliceCharlie: true,
+                    aliceBob: true,
+                    bobCharlie: true
+                });
+                
+                setStage('messaging');
+                setIsEstablishing(false);
+            };
+
+            const sendMessage = () => {
+                if (!newMessage.trim()) return;
+                
+                let encrypted = '';
+                let senderKey = '';
+                let receiverKey = '';
+                
+                // Determine which keys to use
+                if (sender === 'alice' && receiver === 'charlie') {
+                    senderKey = aliceKey;
+                    receiverKey = charlieKey;
+                } else if (sender === 'alice' && receiver === 'bob') {
+                    senderKey = aliceKey;
+                    receiverKey = bobKey;
+                } else if (sender === 'bob' && receiver === 'charlie') {
+                    senderKey = bobKey;
+                    receiverKey = charlieKey;
+                } else if (sender === 'charlie' && receiver === 'alice') {
+                    senderKey = charlieKey;
+                    receiverKey = aliceKey;
+                } else if (sender === 'charlie' && receiver === 'bob') {
+                    senderKey = charlieKey;
+                    receiverKey = bobKey;
+                } else if (sender === 'bob' && receiver === 'alice') {
+                    senderKey = bobKey;
+                    receiverKey = aliceKey;
+                }
+                
+                encrypted = xorEncrypt(newMessage, senderKey);
+                
+                const msg = {
+                    id: Date.now(),
+                    sender,
+                    receiver,
+                    plaintext: newMessage,
+                    encrypted,
+                    senderKey: senderKey.substring(0, 16) + '...',
+                    receiverKey: receiverKey.substring(0, 16) + '...',
+                    decrypted: xorDecrypt(encrypted, receiverKey),
+                    timestamp: new Date().toLocaleTimeString()
+                };
+                
+                setMessages(prev => [...prev, msg]);
+                setNewMessage('');
+                
+                addLog(`📨 ${sender.toUpperCase()} → ${receiver.toUpperCase()}: Message sent (quantum encrypted)`, 'info');
+            };
+
+            const resetNetwork = () => {
+                setStage('setup');
+                setAliceKey('');
+                setBobKey('');
+                setCharlieKey('');
+                setMessages([]);
+                setQuantumChannel(null);
+                setNetworkLog([]);
+                setEavesdropper(false);
+            };
+
+            const NetworkNode = ({ name, color, position, hasKey }) => (
+                <div 
+                    className={`absolute ${position} flex flex-col items-center`}
+                    style={{ zIndex: 10 }}
+                >
+                    <div className={`w-20 h-20 rounded-full ${color} border-4 border-white shadow-xl flex items-center justify-center relative`}>
+                        <div className="text-white font-bold text-lg">{name[0].toUpperCase()}</div>
+                        {hasKey && (
+                            <div className="absolute -top-2 -right-2 bg-green-500 rounded-full p-1">
+                                <LockIcon />
+                            </div>
+                        )}
+                    </div>
+                    <div className="mt-2 font-bold text-gray-700">{name}</div>
+                    {hasKey && (
+                        <div className="text-xs text-green-600 font-mono mt-1">
+                            {name === 'Alice' && aliceKey.substring(0, 8) + '...'}
+                            {name === 'Bob' && bobKey.substring(0, 8) + '...'}
+                            {name === 'Charlie' && charlieKey.substring(0, 8) + '...'}
+                        </div>
+                    )}
+                </div>
+            );
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 p-6">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="bg-white rounded-2xl shadow-2xl p-8">
+                            <h1 className="text-4xl font-bold text-center mb-2 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                                Quantum Secure Messaging Network
+                            </h1>
+                            <p className="text-center text-gray-600 mb-8">
+                                Real-world application of Entanglement Swapping for Quantum Key Distribution
+                            </p>
+
+                            {/* Network Visualization */}
+                            <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-8 mb-8 relative" style={{ height: '400px' }}>
+                                <NetworkNode 
+                                    name="Alice" 
+                                    color="bg-blue-500" 
+                                    position="left-10 top-1/2 transform -translate-y-1/2"
+                                    hasKey={stage === 'messaging'}
+                                />
+                                
+                                <NetworkNode 
+                                    name="Bob" 
+                                    color="bg-purple-500" 
+                                    position="left-1/2 top-10 transform -translate-x-1/2"
+                                    hasKey={stage === 'messaging'}
+                                />
+                                
+                                <NetworkNode 
+                                    name="Charlie" 
+                                    color="bg-pink-500" 
+                                    position="right-10 top-1/2 transform -translate-y-1/2"
+                                    hasKey={stage === 'messaging'}
+                                />
+
+                                {/* Quantum Links */}
+                                {stage !== 'setup' && (
+                                    <svg className="absolute inset-0 w-full h-full pointer-events-none">
+                                        {/* Alice to Bob */}
+                                        <line x1="120" y1="200" x2="50%" y2="90" 
+                                              stroke={stage === 'messaging' ? '#8b5cf6' : '#d1d5db'} 
+                                              strokeWidth="3" 
+                                              strokeDasharray={stage === 'messaging' ? '0' : '5,5'}
+                                              className={stage === 'establishing' ? 'animate-pulse' : ''}
+                                        />
+                                        {/* Bob to Charlie */}
+                                        <line x1="50%" y1="90" x2="calc(100% - 120px)" y2="200" 
+                                              stroke={stage === 'messaging' ? '#8b5cf6' : '#d1d5db'} 
+                                              strokeWidth="3" 
+                                              strokeDasharray={stage === 'messaging' ? '0' : '5,5'}
+                                              className={stage === 'establishing' ? 'animate-pulse' : ''}
+                                        />
+                                        {/* Alice to Charlie (entanglement swapped) */}
+                                        {stage === 'messaging' && (
+                                            <line x1="120" y1="200" x2="calc(100% - 120px)" y2="200" 
+                                                  stroke="#ec4899" 
+                                                  strokeWidth="4" 
+                                                  strokeDasharray="10,5"
+                                                  className="animate-pulse"
+                                            />
+                                        )}
+                                    </svg>
+                                )}
+
+                                {/* Status indicator */}
+                                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+                                    {stage === 'setup' && (
+                                        <div className="bg-gray-100 border-2 border-gray-300 rounded-lg px-4 py-2">
+                                            <p className="text-gray-600 font-medium">Network Offline - Click "Establish Quantum Channel"</p>
+                                        </div>
+                                    )}
+                                    {stage === 'establishing' && (
+                                        <div className="bg-blue-100 border-2 border-blue-400 rounded-lg px-4 py-2 animate-pulse">
+                                            <p className="text-blue-700 font-medium">⚛️ Performing Entanglement Swapping...</p>
+                                        </div>
+                                    )}
+                                    {stage === 'messaging' && (
+                                        <div className="bg-green-100 border-2 border-green-500 rounded-lg px-4 py-2">
+                                            <p className="text-green-700 font-medium">🔐 Quantum Channel Active - Secured by Entanglement</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Controls */}
+                            <div className="grid grid-cols-2 gap-8 mb-8">
+                                {/* Left panel - Controls */}
+                                <div>
+                                    <h3 className="text-xl font-bold mb-4">Network Control</h3>
+                                    
+                                    {stage === 'setup' && (
+                                        <>
+                                            <div className="mb-4">
+                                                <label className="flex items-center space-x-2 cursor-pointer">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={eavesdropper}
+                                                        onChange={(e) => setEavesdropper(e.target.checked)}
+                                                        className="w-5 h-5"
+                                                    />
+                                                    <span className="text-gray-700">Simulate Eavesdropper (Eve) 🕵️</span>
+                                                </label>
+                                                {eavesdropper && (
+                                                    <p className="text-sm text-orange-600 mt-2 ml-7">
+                                                        ⚠️ Eve will attempt to intercept the quantum channel
+                                                    </p>
+                                                )}
+                                            </div>
+                                            
+                                            <button
+                                                onClick={establishQuantumChannel}
+                                                disabled={isEstablishing}
+                                                className="w-full px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50"
+                                            >
+                                                Establish Quantum Channel
+                                            </button>
+                                        </>
+                                    )}
+
+                                    {stage === 'messaging' && (
+                                        <>
+                                            <div className="space-y-4 mb-4">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">From:</label>
+                                                    <select 
+                                                        value={sender}
+                                                        onChange={(e) => setSender(e.target.value)}
+                                                        className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg"
+                                                    >
+                                                        <option value="alice">Alice</option>
+                                                        <option value="bob">Bob</option>
+                                                        <option value="charlie">Charlie</option>
+                                                    </select>
+                                                </div>
+                                                
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">To:</label>
+                                                    <select 
+                                                        value={receiver}
+                                                        onChange={(e) => setReceiver(e.target.value)}
+                                                        className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg"
+                                                    >
+                                                        <option value="alice" disabled={sender === 'alice'}>Alice</option>
+                                                        <option value="bob" disabled={sender === 'bob'}>Bob</option>
+                                                        <option value="charlie" disabled={sender === 'charlie'}>Charlie</option>
+                                                    </select>
+                                                </div>
+                                                
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Message:</label>
+                                                    <textarea
+                                                        value={newMessage}
+                                                        onChange={(e) => setNewMessage(e.target.value)}
+                                                        placeholder="Type your secret message..."
+                                                        className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg resize-none"
+                                                        rows="3"
+                                                    />
+                                                </div>
+                                            </div>
+                                            
+                                            <button
+                                                onClick={sendMessage}
+                                                disabled={!newMessage.trim()}
+                                                className="w-full px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg font-medium hover:from-green-700 hover:to-emerald-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                                            >
+                                                <SendIcon />
+                                                Send Encrypted Message
+                                            </button>
+                                            
+                                            <button
+                                                onClick={resetNetwork}
+                                                className="w-full mt-2 px-6 py-3 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700"
+                                            >
+                                                Reset Network
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+
+                                {/* Right panel - Network Log */}
+                                <div>
+                                    <h3 className="text-xl font-bold mb-4">Network Activity Log</h3>
+                                    <div className="bg-gray-900 rounded-lg p-4 h-80 overflow-y-auto font-mono text-sm">
+                                        {networkLog.length === 0 ? (
+                                            <p className="text-gray-500">Waiting for network activity...</p>
+                                        ) : (
+                                            networkLog.map((log, idx) => (
+                                                <div key={idx} className={`mb-2 ${
+                                                    log.type === 'error' ? 'text-red-400' :
+                                                    log.type === 'success' ? 'text-green-400' :
+                                                    'text-blue-400'
+                                                }`}>
+                                                    <span className="text-gray-500">[{log.timestamp}]</span> {log.message}
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Message History */}
+                            {messages.length > 0 && (
+                                <div>
+                                    <h3 className="text-xl font-bold mb-4">Message History (Quantum Encrypted)</h3>
+                                    <div className="space-y-4">
+                                        {messages.map((msg) => (
+                                            <div key={msg.id} className="bg-gray-50 rounded-lg p-4 border-2 border-gray-200">
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-bold text-blue-600">{msg.sender.toUpperCase()}</span>
+                                                        <span>→</span>
+                                                        <span className="font-bold text-pink-600">{msg.receiver.toUpperCase()}</span>
+                                                        <span className="text-xs text-gray-500">{msg.timestamp}</span>
+                                                    </div>
+                                                    <LockIcon />
+                                                </div>
+                                                
+                                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                                    <div>
+                                                        <p className="text-gray-600 font-medium mb-1">Original:</p>
+                                                        <p className="bg-white p-2 rounded border">{msg.plaintext}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-gray-600 font-medium mb-1">Encrypted (in transit):</p>
+                                                        <p className="bg-red-50 p-2 rounded border border-red-200 font-mono text-xs break-all">
+                                                            {msg.encrypted}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="mt-3 pt-3 border-t">
+                                                    <p className="text-gray-600 font-medium mb-1 text-sm">Decrypted by {msg.receiver}:</p>
+                                                    <p className="bg-green-50 p-2 rounded border border-green-200">
+                                                        {msg.decrypted}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Explanation */}
+                            <div className="mt-8 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6">
+                                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                                    <AlertIcon />
+                                    How This Works (Real Quantum Network Application)
+                                </h3>
+                                <div className="space-y-3 text-gray-700">
+                                    <p><strong>🎯 Real-World Problem:</strong> How do Alice and Charlie securely communicate when they're far apart?</p>
+                                    
+                                    <p><strong>⚛️ Quantum Solution (Entanglement Swapping):</strong></p>
+                                    <ol className="list-decimal list-inside space-y-2 ml-4">
+                                        <li><strong>Setup:</strong> Bob (quantum repeater) creates two entangled pairs: A-B and C-D</li>
+                                        <li><strong>Distribution:</strong> Alice gets photon A, Bob keeps B & C, Charlie gets D</li>
+                                        <li><strong>Swapping:</strong> Bob performs Bell measurement on photons B & C</li>
+                                        <li><strong>Result:</strong> Alice's photon A and Charlie's photon D are now entangled!</li>
+                                        <li><strong>Key Generation:</strong> They use their entangled photons to generate identical quantum keys</li>
+                                        <li><strong>Secure Communication:</strong> Messages encrypted with these keys are quantum-secure</li>
+                                    </ol>
+                                    
+                                    <p><strong>🛡️ Why It's Secure:</strong> Any eavesdropper (Eve) trying to intercept would collapse the quantum state, immediately alerting both parties. This is impossible with classical encryption!</p>
+                                    
+                                    <p className="text-sm italic mt-4 bg-white p-3 rounded">
+                                        <strong>Real Applications:</strong> This exact technology is being used in China's quantum satellite network, quantum internet testbeds in Europe and USA, and will be the foundation of future ultra-secure banking and government communications.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<QuantumSecureMessaging />);
+    </script>
+</body>
+</html>
